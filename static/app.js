@@ -16,6 +16,60 @@ function addMessage(text, kind) {
   return bubble;
 }
 
+function feedbackButton(symbol, score, label) {
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "feedback-btn";
+  button.textContent = symbol;
+  button.setAttribute("aria-label", label);
+  button.addEventListener("click", () => submitFeedback(button, score));
+  return button;
+}
+
+function addFeedback(bubble, runId) {
+  if (!runId) return;
+  const row = document.createElement("div");
+  row.className = "feedback";
+  row.dataset.runId = runId;
+
+  const note = document.createElement("span");
+  note.className = "feedback-note";
+  note.textContent = "¿Te ha servido?";
+
+  row.append(note, feedbackButton("👍", 1, "Respuesta útil"), feedbackButton("👎", 0, "Respuesta poco útil"));
+  bubble.after(row);
+  messages.scrollTop = messages.scrollHeight;
+}
+
+async function submitFeedback(button, score) {
+  const row = button.closest(".feedback");
+  if (!row || row.dataset.sent) return;
+  const buttons = row.querySelectorAll(".feedback-btn");
+  buttons.forEach((item) => (item.disabled = true));
+
+  try {
+    const response = await fetch("/api/feedback", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        run_id: row.dataset.runId,
+        score,
+        comment: score === 1 ? "thumbs_up" : "thumbs_down",
+      }),
+    });
+    if (!response.ok) {
+      const data = await response.json().catch(() => ({}));
+      throw new Error(data.detail || "No se pudo registrar el feedback.");
+    }
+    row.dataset.sent = "1";
+    button.classList.add("selected");
+    row.querySelector(".feedback-note").textContent = "¡Gracias por el feedback!";
+  } catch (error) {
+    buttons.forEach((item) => (item.disabled = false));
+    status.textContent = error.message;
+  }
+}
+
 async function sendMessage(text) {
   const message = text.trim();
   if (!message || busy) return;
@@ -39,6 +93,7 @@ async function sendMessage(text) {
     sessionId = result.session_id;
     pending.classList.remove("pending");
     pending.textContent = result.reply;
+    addFeedback(pending, result.run_id);
   } catch (error) {
     pending.remove();
     status.textContent = error.message;
