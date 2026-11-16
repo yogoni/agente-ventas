@@ -132,6 +132,25 @@ Cada conversación mantiene su contexto en una sesión del agente en memoria del
 servidor; el botón "Nueva conversación" la elimina y las sesiones se pierden al
 reiniciar el proceso. Se admiten como máximo 100 conversaciones simultáneas.
 
+#### Feedback 👍/👎 en LangSmith
+
+Cada respuesta lleva dos botones que envían el feedback a LangSmith. Para
+activarlo, añade a `.env`:
+
+```
+LANGSMITH_API_KEY=tu_clave_de_langsmith
+LANGSMITH_PROJECT=agente-ventas
+LANGSMITH_ENDPOINT=https://eu.api.smith.langchain.com
+```
+
+La última línea solo hace falta si tu cuenta está en la región EU; sin ella se
+usa la de EE. UU. y las claves EU devuelven 403. Sin `LANGSMITH_API_KEY` la
+aplicación funciona igual y los botones responden 503.
+
+`POST /api/chat` abre una traza `sales_agent_chat` con un `run_id` propio y lo
+devuelve en la respuesta; al pulsar un botón, `POST /api/feedback` registra
+`user_feedback` (1 o 0) sobre esa traza. La clave nunca sale del servidor.
+
 ## Detalles
 
 Usa OpenRouter con el modelo `deepseek/deepseek-v4.1-flash`; puedes elegir otro
