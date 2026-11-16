@@ -37,6 +37,12 @@ h1 { margin: 0; font-size: clamp(26px, 4vw, 36px); line-height: 1.1; }
 .bubble.user { align-self: flex-end; background: #167f60; color: white; border-bottom-right-radius: 5px; }
 .bubble.assistant { align-self: flex-start; background: white; border: 1px solid #e1e9e2; border-bottom-left-radius: 5px; box-shadow: 0 4px 16px #233f2b0a; }
 .bubble.pending { color: #67766d; }
+.feedback { align-self: flex-start; display: flex; align-items: center; gap: 8px; margin-top: -6px; padding-left: 4px; color: #62736c; font-size: 13px; }
+.feedback-note { color: #6b7d73; }
+.feedback-btn { border: 1px solid #d5e0d7; background: #fff; border-radius: 100px; padding: 4px 10px; font-size: 15px; line-height: 1; transition: border-color .15s, background .15s, transform .15s; }
+.feedback-btn:hover:not(:disabled) { border-color: #148466; background: #f0faf5; transform: translateY(-1px); }
+.feedback-btn.selected { border-color: #167f60; background: #e1f2e8; }
+.feedback-btn:disabled { opacity: .6; cursor: default; }
 .composer { display: flex; align-items: flex-end; gap: 10px; border: 1px solid #cbdccf; border-radius: 17px; padding: 8px; background: white; box-shadow: 0 6px 24px #1c402111; }
 .composer:focus-within { border-color: #168969; box-shadow: 0 0 0 3px #16896925; }
 textarea { flex: 1; resize: none; border: 0; outline: 0; padding: 10px; min-height: 42px; max-height: 150px; color: #18302b; background: transparent; line-height: 1.5; }

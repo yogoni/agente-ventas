@@ -46,12 +46,19 @@ Crea tu `.env` a partir de la plantilla:
 cp .env.example .env
 ```
 
-En Windows, `copy .env.example .env`. Rellena los dos valores:
+En Windows, `copy .env.example .env`. Rellena los valores:
 
 ```
 OPENROUTER_API_KEY=tu_clave_de_openrouter
 SERVICE_PORT=8000
+LANGSMITH_API_KEY=tu_clave_de_langsmith
+LANGSMITH_PROJECT=agente-ventas
+LANGSMITH_ENDPOINT=https://eu.api.smith.langchain.com
 ```
+
+`LANGSMITH_API_KEY` es opcional: sin ella la aplicación funciona igual, pero los
+botones de feedback responden con error 503. Si tu cuenta de LangSmith está en
+la región de EE. UU., borra `LANGSMITH_ENDPOINT` (el valor por defecto).
 
 `.env` está excluido de Git: cada persona usa su propia clave. En local,
 `SERVICE_PORT` es el puerto en el que escucharás; en el servidor del aula es tu
@@ -102,6 +109,23 @@ memoria del servidor; "Nueva conversación" la elimina. Las sesiones se pierden
 al reiniciar el servidor. Se admite un máximo de 100 sesiones activas por
 proceso. Para desplegar varios procesos se necesitaría un almacén de sesiones
 compartido.
+
+#### Feedback 👍/👎 en LangSmith
+
+Cada respuesta del agente muestra dos botones, 👍 y 👎, que envían el feedback a
+LangSmith. El flujo es:
+
+1. `POST /api/chat` genera un `run_id` propio y abre con él una traza
+   `sales_agent_chat` en el proyecto `LANGSMITH_PROJECT`. La traza guarda la
+   pregunta, la respuesta y la latencia.
+2. La respuesta JSON incluye ese `run_id` y la interfaz lo guarda en el DOM.
+3. Al pulsar un botón, `POST /api/feedback` con `{run_id, score, comment}` llama
+   a `create_feedback` (`key="user_feedback"`, `score` 1 o 0). La clave de
+   LangSmith no sale nunca del servidor.
+
+El feedback aparece en la traza correspondiente, en el panel de LangSmith, unos
+segundos después. Sin `LANGSMITH_API_KEY` los botones devuelven 503 y la
+conversación sigue funcionando con normalidad.
 
 Con Docker (escucha en el puerto que hayas puesto en `SERVICE_PORT`):
 
